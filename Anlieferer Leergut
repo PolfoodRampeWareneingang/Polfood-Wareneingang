@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wareneingang / Leergut Tool</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body { font-family: Arial; background:#f4f4f4; padding:10px; }
+    .box { background:white; padding:15px; max-width:1000px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);} 
+    h2 { text-align:center; }
+    h3 { margin-top:25px; }
+    label { font-weight:bold; }
+    input, select { width:100%; padding:10px; margin:6px 0; font-size:14px; }
+    button { width:100%; padding:12px; margin-top:10px; background:black; color:white; border:none; border-radius:8px; }
+
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+    th, td { border:1px solid #ddd; padding:6px; text-align:center; }
+    th { background:#eee; }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🚛 Wareneingang + Leergut Tool</h2>
+
+  <h3>Lieferant / Anlieferung</h3>
+
+  <label>Nr</label>
+  <input type="number" id="nr">
+
+  <label>Anlieferer</label>
+  <input id="anlieferer">
+
+  <label>Kennzeichen</label>
+  <input id="kennzeichen">
+
+  <label>Fahrer</label>
+  <input id="fahrer">
+
+  <label>LKW Typ</label>
+  <select id="lkw">
+    <option value="TIR">TIR</option>
+    <option value="6T">6T</option>
+    <option value="8T">8T</option>
+    <option value="12T">12T</option>
+  </select>
+
+  <button onclick="addDelivery()">➕ Lieferung speichern</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nr</th>
+        <th>Anlieferer</th>
+        <th>Kennzeichen</th>
+        <th>Fahrer</th>
+        <th>LKW Typ</th>
+      </tr>
+    </thead>
+    <tbody id="deliveryTable"></tbody>
+  </table>
+
+
+  <h3>Von Polfood verladenes Leergut</h3>
+
+  <label>E2</label>
+  <input type="number" id="e2">
+
+  <label>H1</label>
+  <input type="number" id="h1">
+
+  <label>EPAL</label>
+  <input type="number" id="epal">
+
+  <label>Kennzeichen</label>
+  <input id="kennzeichen2">
+
+  <label>Spedition</label>
+  <input id="spedition">
+
+  <button onclick="addEmpty()">➕ Leergut speichern</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>E2</th>
+        <th>H1</th>
+        <th>EPAL</th>
+        <th>Kennzeichen</th>
+        <th>Spedition</th>
+      </tr>
+    </thead>
+    <tbody id="emptyTable"></tbody>
+    <tfoot>
+      <tr>
+        <th id="sumE2">0</th>
+        <th id="sumH1">0</th>
+        <th id="sumEpal">0</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+
+  <button onclick="exportExcel()">📦 Excel Export</button>
+</div>
+
+<script>
+
+let deliveries = JSON.parse(localStorage.getItem("deliveries") || "[]");
+let empties = JSON.parse(localStorage.getItem("empties") || "[]");
+
+render();
+
+function save(){
+  localStorage.setItem("deliveries", JSON.stringify(deliveries));
+  localStorage.setItem("empties", JSON.stringify(empties));
+}
+
+function addDelivery(){
+  deliveries.push({
+    nr: document.getElementById('nr').value,
+    anlieferer: document.getElementById('anlieferer').value,
+    kennzeichen: document.getElementById('kennzeichen').value,
+    fahrer: document.getElementById('fahrer').value,
+    lkw: document.getElementById('lkw').value
+  });
+  save();
+  render();
+}
+
+function addEmpty(){
+  empties.push({
+    e2: Number(document.getElementById('e2').value || 0),
+    h1: Number(document.getElementById('h1').value || 0),
+    epal: Number(document.getElementById('epal').value || 0),
+    kennzeichen: document.getElementById('kennzeichen2').value,
+    spedition: document.getElementById('spedition').value
+  });
+  save();
+  render();
+}
+
+function render(){
+
+  let dt = document.getElementById('deliveryTable');
+  dt.innerHTML = '';
+
+  deliveries.forEach(d => {
+    dt.innerHTML += `<tr>
+      <td>${d.nr}</td>
+      <td>${d.anlieferer}</td>
+      <td>${d.kennzeichen}</td>
+      <td>${d.fahrer}</td>
+      <td>${d.lkw}</td>
+    </tr>`;
+  });
+
+  let et = document.getElementById('emptyTable');
+  et.innerHTML = '';
+
+  let sumE2=0,sumH1=0,sumEpal=0;
+
+  empties.forEach(e => {
+    sumE2 += e.e2;
+    sumH1 += e.h1;
+    sumEpal += e.epal;
+
+    et.innerHTML += `<tr>
+      <td>${e.e2}</td>
+      <td>${e.h1}</td>
+      <td>${e.epal}</td>
+      <td>${e.kennzeichen}</td>
+      <td>${e.spedition}</td>
+    </tr>`;
+  });
+
+  document.getElementById('sumE2').innerText = sumE2;
+  document.getElementById('sumH1').innerText = sumH1;
+  document.getElementById('sumEpal').innerText = sumEpal;
+}
+
+
+// ✅ NEUE EXCEL FUNKTION (ein Sheet, sauber getrennt)
+function exportExcel(){
+
+  let exportData = [];
+
+  exportData.push({BEREICH: "LIEFERUNGEN"});
+  exportData.push({
+    NR: "Nr",
+    ANLIEFERER: "Anlieferer",
+    KENNZEICHEN: "Kennzeichen",
+    FAHRER: "Fahrer",
+    LKW: "LKW Typ"
+  });
+
+  deliveries.forEach(d => exportData.push(d));
+
+  exportData.push({});
+  exportData.push({});
+  exportData.push({BEREICH: "LEERGUT"});
+
+  exportData.push({
+    E2: "E2",
+    H1: "H1",
+    EPAL: "EPAL",
+    KENNZEICHEN: "Kennzeichen",
+    SPEDITION: "Spedition"
+  });
+
+  empties.forEach(e => exportData.push(e));
+
+  exportData.push({});
+  exportData.push({
+    SUMME_E2: empties.reduce((a,b)=>a + b.e2,0),
+    SUMME_H1: empties.reduce((a,b)=>a + b.h1,0),
+    SUMME_EPAL: empties.reduce((a,b)=>a + b.epal,0)
+  });
+
+  let ws = XLSX.utils.json_to_sheet(exportData);
+
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Wareneingang");
+
+  XLSX.writeFile(wb, "Wareneingang_Report.xlsx");
+}
+
+</script>
+
+</body>
+</html>
