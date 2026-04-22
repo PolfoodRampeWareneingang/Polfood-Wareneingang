@@ -38,6 +38,7 @@
       padding: 10px;
       margin: 6px 0;
       box-sizing: border-box;
+      font-size: 16px;
     }
 
     button {
@@ -49,6 +50,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
     }
 
     button:hover {
@@ -86,16 +88,18 @@
       width: 100%;
       border: 1px solid #ccc;
       border-top: none;
-      max-height: 150px;
+      max-height: 180px;
       overflow-y: auto;
       background: white;
       display: none;
       z-index: 1000;
       box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
     }
 
     .dropdown-item {
-      padding: 8px;
+      padding: 14px;
+      font-size: 16px;
       cursor: pointer;
       text-align: left;
     }
@@ -114,13 +118,6 @@
       width: auto;
       margin: 0;
     }
-
-    .small {
-      font-size: 12px;
-      color: gray;
-      text-align: center;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
@@ -138,29 +135,30 @@
   </div>
 
   <label for="pallnr">Paletten Nr</label>
-  <input id="pallnr">
+  <input type="text" id="pallnr" inputmode="numeric" pattern="[0-9]*">
 
   <label for="e2_in">E2 IN</label>
-  <input type="number" id="e2_in">
+  <input type="text" id="e2_in" inputmode="numeric" pattern="[0-9]*">
 
   <label for="h1_in">H1 IN</label>
-  <input type="number" id="h1_in">
+  <input type="text" id="h1_in" inputmode="numeric" pattern="[0-9]*">
 
   <label for="einweg">Einweg</label>
-  <input type="number" id="einweg">
+  <input type="text" id="einweg" inputmode="numeric" pattern="[0-9]*">
 
   <label for="epal">EPAL</label>
-  <input type="number" id="epal">
+  <input type="text" id="epal" inputmode="numeric" pattern="[0-9]*">
 
   <label for="e2_out">E2 OUT</label>
-  <input type="number" id="e2_out">
+  <input type="text" id="e2_out" inputmode="numeric" pattern="[0-9]*">
 
   <label for="h1_out">H1 OUT</label>
-  <input type="number" id="h1_out">
+  <input type="text" id="h1_out" inputmode="numeric" pattern="[0-9]*">
 
   <button type="button" onclick="addEntry()">➕ Eintrag speichern</button>
   <button type="button" onclick="exportExcel()">📦 Excel Tagesbericht exportieren</button>
   <button type="button" onclick="clearData()">🗑️ Alle Daten löschen</button>
+  <button type="button" onclick="resetProduzenten()">♻️ Produzentenliste zurücksetzen</button>
 
   <table>
     <thead>
@@ -182,27 +180,37 @@
 </div>
 
 <script>
-  let data = JSON.parse(localStorage.getItem("spedition_data") || "[]");
-
-  let produzenten = [
-    "Bomadek",
-    "Bodama",
-    "Podolski",
-    "Bimex",
+  const standardProduzenten = [
     "Animex K4",
+    "Bimex",
+    "Bodama",
+    "Bomadek",
     "Dasyzna",
-    "OSI",
-    "Indrol",
     "Gobarto",
-    "Wipasz",
-    "Plukon"
+    "Indrol",
+    "OSI",
+    "Plukon",
+    "Podolski",
+    "Wipasz"
   ];
+
+  let data = JSON.parse(localStorage.getItem("spedition_data") || "[]");
+  let produzenten = JSON.parse(localStorage.getItem("produzenten_liste") || "null") || [...standardProduzenten];
 
   const produzentInput = document.getElementById("produzent");
   const produzentList = document.getElementById("produzentList");
+  const datumInput = document.getElementById("datum");
+
+  if (!datumInput.value) {
+    datumInput.value = new Date().toISOString().split("T")[0];
+  }
 
   function save() {
     localStorage.setItem("spedition_data", JSON.stringify(data));
+  }
+
+  function saveProduzenten() {
+    localStorage.setItem("produzenten_liste", JSON.stringify(produzenten));
   }
 
   function sortiereProduzenten() {
@@ -239,6 +247,17 @@
     if (!exists) {
       produzenten.push(val);
       sortiereProduzenten();
+      saveProduzenten();
+    }
+  }
+
+  function resetProduzenten() {
+    if (confirm("Produzentenliste auf Standard zurücksetzen?")) {
+      produzenten = [...standardProduzenten];
+      sortiereProduzenten();
+      saveProduzenten();
+      renderProduzenten(produzentInput.value);
+      alert("Produzentenliste wurde zurückgesetzt.");
     }
   }
 
@@ -267,7 +286,6 @@
   function addEntry() {
     const datum = document.getElementById("datum").value;
     const produzent = document.getElementById("produzent").value.trim();
-    const pallnr = document.getElementById("pallnr").value.trim();
 
     if (!datum) {
       alert("Bitte Datum eingeben.");
@@ -284,7 +302,7 @@
     data.push({
       datum: datum,
       produzent: produzent,
-      pallnr: pallnr,
+      pallnr: Number(document.getElementById("pallnr").value || 0),
       e2_in: Number(document.getElementById("e2_in").value || 0),
       h1_in: Number(document.getElementById("h1_in").value || 0),
       einweg: Number(document.getElementById("einweg").value || 0),
@@ -303,7 +321,8 @@
     document.getElementById("epal").value = "";
     document.getElementById("e2_out").value = "";
     document.getElementById("h1_out").value = "";
-    document.getElementById("produzent").value = "";
+
+    document.getElementById("pallnr").focus();
   }
 
   function deleteEntry(index) {
@@ -359,6 +378,7 @@
   }
 
   sortiereProduzenten();
+  saveProduzenten();
   render();
 </script>
 
