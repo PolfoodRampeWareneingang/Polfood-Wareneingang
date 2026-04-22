@@ -3,85 +3,187 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Wareneingang Polfood GmbH  </title>
+  <title>Wareneingang Polfood GmbH</title>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    body { font-family: Arial; background:#f4f4f4; padding:15px; }
-    .box { background:white; padding:15px; max-width:900px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);} 
-    h2 { text-align:center; }
-    label { font-weight:bold; }
-    input, select { width:100%; padding:10px; margin:6px 0; }
-    button { width:100%; padding:12px; margin-top:10px; background:black; color:white; border:none; border-radius:6px; }
-    table { width:100%; margin-top:20px; border-collapse:collapse; font-size:12px; }
-    th, td { border:1px solid #ddd; padding:6px; text-align:center; }
-    th { background:#eee; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 15px;
+    }
 
-    .small { font-size:12px; color:gray; text-align:center; margin-top:10px; }
+    .box {
+      background: white;
+      padding: 15px;
+      max-width: 900px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    .dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown input {
+      width: 100%;
+    }
+
+    .dropdown-list {
+      position: absolute;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 150px;
+      overflow-y: auto;
+      background: white;
+      display: none;
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+
+    .dropdown-item {
+      padding: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .dropdown-item:hover {
+      background: #f0f0f0;
+    }
+
+    .action-btn {
+      background: #c62828;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: auto;
+      margin: 0;
+    }
+
+    .small {
+      font-size: 12px;
+      color: gray;
+      text-align: center;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
 <div class="box">
   <h2>🚛 Wareneingang Polfood GmbH</h2>
-  
 
-  <label>Datum</label>
+  <label for="datum">Datum</label>
   <input type="date" id="datum">
 
-  <label>Produzent</label>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<title>Produzent Dropdown</title>
+  <label for="produzent">Produzent</label>
+  <div class="dropdown">
+    <input type="text" id="produzent" placeholder="Produzent wählen oder eingeben" autocomplete="off">
+    <div id="produzentList" class="dropdown-list"></div>
+  </div>
 
-<style>
-  .dropdown {
-    position: relative;
-    width: 250px;
-    font-family: Arial;
-  }
+  <label for="pallnr">Paletten Nr</label>
+  <input id="pallnr">
 
-  .dropdown input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-  }
+  <label for="e2_in">E2 IN</label>
+  <input type="number" id="e2_in">
 
-  .dropdown-list {
-    position: absolute;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-top: none;
-    max-height: 150px;
-    overflow-y: auto;
-    background: white;
-    display: none;
-    z-index: 1000;
-  }
+  <label for="h1_in">H1 IN</label>
+  <input type="number" id="h1_in">
 
-  .dropdown-item {
-    padding: 8px;
-    cursor: pointer;
-  }
+  <label for="einweg">Einweg</label>
+  <input type="number" id="einweg">
 
-  .dropdown-item:hover {
-    background: #f0f0f0;
-  }
-</style>
-</head>
-<body>
+  <label for="epal">EPAL</label>
+  <input type="number" id="epal">
 
-<label>Produzent</label>
+  <label for="e2_out">E2 OUT</label>
+  <input type="number" id="e2_out">
 
-<div class="dropdown">
-  <input type="text" id="input" placeholder="Produzent wählen oder eingeben">
-  <div id="list" class="dropdown-list"></div>
+  <label for="h1_out">H1 OUT</label>
+  <input type="number" id="h1_out">
+
+  <button type="button" onclick="addEntry()">➕ Eintrag speichern</button>
+  <button type="button" onclick="exportExcel()">📦 Excel Tagesbericht exportieren</button>
+  <button type="button" onclick="clearData()">🗑️ Alle Daten löschen</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Produzent</th>
+        <th>Pall Nr</th>
+        <th>E2 IN</th>
+        <th>H1 IN</th>
+        <th>Einweg</th>
+        <th>EPAL</th>
+        <th>E2 OUT</th>
+        <th>H1 OUT</th>
+        <th>Aktion</th>
+      </tr>
+    </thead>
+    <tbody id="table"></tbody>
+  </table>
 </div>
 
 <script>
+  let data = JSON.parse(localStorage.getItem("spedition_data") || "[]");
+
   let produzenten = [
     "Bomadek",
     "Bodama",
@@ -96,15 +198,19 @@
     "Plukon"
   ];
 
-  const input = document.getElementById("input");
-  const list = document.getElementById("list");
+  const produzentInput = document.getElementById("produzent");
+  const produzentList = document.getElementById("produzentList");
 
-  function sortiereListe() {
+  function save() {
+    localStorage.setItem("spedition_data", JSON.stringify(data));
+  }
+
+  function sortiereProduzenten() {
     produzenten.sort((a, b) => a.localeCompare(b, "de", { sensitivity: "base" }));
   }
 
-  function renderListe(filter = "") {
-    list.innerHTML = "";
+  function renderProduzenten(filter = "") {
+    produzentList.innerHTML = "";
 
     const gefiltert = produzenten.filter(p =>
       p.toLowerCase().includes(filter.toLowerCase())
@@ -114,16 +220,14 @@
       const div = document.createElement("div");
       div.className = "dropdown-item";
       div.textContent = p;
-
       div.onclick = () => {
-        input.value = p;
-        list.style.display = "none";
+        produzentInput.value = p;
+        produzentList.style.display = "none";
       };
-
-      list.appendChild(div);
+      produzentList.appendChild(div);
     });
 
-    list.style.display = gefiltert.length ? "block" : "none";
+    produzentList.style.display = gefiltert.length ? "block" : "none";
   }
 
   function addProduzent(value) {
@@ -134,145 +238,128 @@
 
     if (!exists) {
       produzenten.push(val);
-      sortiereListe();
+      sortiereProduzenten();
     }
   }
 
-  input.addEventListener("input", () => {
-    renderListe(input.value);
+  produzentInput.addEventListener("input", () => {
+    renderProduzenten(produzentInput.value);
   });
 
-  input.addEventListener("focus", () => {
-    renderListe(input.value);
+  produzentInput.addEventListener("focus", () => {
+    renderProduzenten(produzentInput.value);
   });
 
-  input.addEventListener("keydown", (e) => {
+  produzentInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      addProduzent(input.value);
-      renderListe("");
+      e.preventDefault();
+      addProduzent(produzentInput.value);
+      renderProduzenten(produzentInput.value);
     }
   });
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".dropdown")) {
-      list.style.display = "none";
+      produzentList.style.display = "none";
     }
   });
 
-  sortiereListe();
-</script>
+  function addEntry() {
+    const datum = document.getElementById("datum").value;
+    const produzent = document.getElementById("produzent").value.trim();
+    const pallnr = document.getElementById("pallnr").value.trim();
 
-</body>
-</html>
-  <label>Paletten Nr</label>
-  <input id="pallnr">
+    if (!datum) {
+      alert("Bitte Datum eingeben.");
+      return;
+    }
 
-  <label>E2 IN</label>
-  <input type="number" id="e2_in">
+    if (!produzent) {
+      alert("Bitte Produzent eingeben.");
+      return;
+    }
 
-  <label>H1 IN</label>
-  <input type="number" id="h1_in">
+    addProduzent(produzent);
 
-  <label>Einweg</label>
-  <input type="number" id="einweg">
+    data.push({
+      datum: datum,
+      produzent: produzent,
+      pallnr: pallnr,
+      e2_in: Number(document.getElementById("e2_in").value || 0),
+      h1_in: Number(document.getElementById("h1_in").value || 0),
+      einweg: Number(document.getElementById("einweg").value || 0),
+      epal: Number(document.getElementById("epal").value || 0),
+      e2_out: Number(document.getElementById("e2_out").value || 0),
+      h1_out: Number(document.getElementById("h1_out").value || 0)
+    });
 
-  <label>EPAL</label>
-  <input type="number" id="epal">
-
-  <label>E2 OUT</label>
-  <input type="number" id="e2_out">
-
-  <label>H1 OUT</label>
-  <input type="number" id="h1_out">
-
-  <button onclick="addEntry()">➕ Eintrag speichern</button>
-  <button onclick="exportExcel()">📦 Excel Tagesbericht exportieren</button>
-  <button onclick="clearData()">🗑️ Daten löschen</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Datum</th>
-        <th>Produzent</th>
-        <th>Pall Nr</th>
-        <th>E2 IN</th>
-        <th>H1 IN</th>
-        <th>Einweg</th>
-        <th>EPAL</th>
-        <th>E2 OUT</th>
-        <th>H1 OUT</th>
-      </tr>
-    </thead>
-    <tbody id="table"></tbody>
-  </table>
-</div>
-
-<script>
-let data = JSON.parse(localStorage.getItem("spedition_data") || "[]");
-
-render();
-
-function save() {
-  localStorage.setItem("spedition_data", JSON.stringify(data));
-}
-
-function addEntry() {
-  data.push({
-    datum: document.getElementById('datum').value,
-    produzent: document.getElementById('produzent').value,
-    pallnr: document.getElementById('pallnr').value,
-    e2_in: Number(document.getElementById('e2_in').value || 0),
-    h1_in: Number(document.getElementById('h1_in').value || 0),
-    einweg: Number(document.getElementById('einweg').value || 0),
-    epal: Number(document.getElementById('epal').value || 0),
-    e2_out: Number(document.getElementById('e2_out').value || 0),
-    h1_out: Number(document.getElementById('h1_out').value || 0)
-  });
-
-  save();
-  render();
-}
-
-function render() {
-  let tbody = document.getElementById('table');
-  tbody.innerHTML = '';
-
-  data.forEach(r => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${r.datum}</td>
-        <td>${r.produzent}</td>
-        <td>${r.pallnr}</td>
-        <td>${r.e2_in}</td>
-        <td>${r.h1_in}</td>
-        <td>${r.einweg}</td>
-        <td>${r.epal}</td>
-        <td>${r.e2_out}</td>
-        <td>${r.h1_out}</td>
-      </tr>
-    `;
-  });
-}
-
-function exportExcel() {
-  if(data.length === 0){ alert("Keine Daten!"); return; }
-
-  let ws = XLSX.utils.json_to_sheet(data);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Tagesbericht");
-
-  let today = document.getElementById('datum').value || 'report';
-
-  XLSX.writeFile(wb, `Tagesbericht_${today}.xlsx`);
-}
-
-function clearData(){
-  if(confirm("Wirklich alle Daten löschen?")){
-    data = [];
     save();
     render();
+
+    document.getElementById("pallnr").value = "";
+    document.getElementById("e2_in").value = "";
+    document.getElementById("h1_in").value = "";
+    document.getElementById("einweg").value = "";
+    document.getElementById("epal").value = "";
+    document.getElementById("e2_out").value = "";
+    document.getElementById("h1_out").value = "";
+    document.getElementById("produzent").value = "";
   }
-}
+
+  function deleteEntry(index) {
+    if (confirm("Diesen Eintrag löschen?")) {
+      data.splice(index, 1);
+      save();
+      render();
+    }
+  }
+
+  function render() {
+    const tbody = document.getElementById("table");
+    tbody.innerHTML = "";
+
+    data.forEach((r, index) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.datum}</td>
+          <td>${r.produzent}</td>
+          <td>${r.pallnr}</td>
+          <td>${r.e2_in}</td>
+          <td>${r.h1_in}</td>
+          <td>${r.einweg}</td>
+          <td>${r.epal}</td>
+          <td>${r.e2_out}</td>
+          <td>${r.h1_out}</td>
+          <td><button type="button" class="action-btn" onclick="deleteEntry(${index})">Löschen</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  function exportExcel() {
+    if (data.length === 0) {
+      alert("Keine Daten!");
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tagesbericht");
+
+    const today = document.getElementById("datum").value || "report";
+    XLSX.writeFile(wb, `Tagesbericht_${today}.xlsx`);
+  }
+
+  function clearData() {
+    if (confirm("Wirklich alle Daten löschen?")) {
+      data = [];
+      save();
+      render();
+    }
+  }
+
+  sortiereProduzenten();
+  render();
 </script>
 
 </body>
