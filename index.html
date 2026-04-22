@@ -32,7 +32,9 @@
 
  <label>Produzent</label>
  <label>Produzent</label>
-<input list="produzentenListe" id="produzent" placeholder="Produzent wählen oder eingeben">
+<input list="produzentenListe" id="produzent" 
+       placeholder="Produzent wählen oder eingeben"
+       onchange="handleProduzentChange()">
 
 <datalist id="produzentenListe"></datalist>
 
@@ -69,6 +71,15 @@ function renderProduzenten(){
 function addProduzentIfNew(name){
   if(name && !produzenten.includes(name)){
     produzenten.push(name);
+    localStorage.setItem("produzenten", JSON.stringify(produzenten));
+    renderProduzenten();
+  function handleProduzentChange(){
+  let name = document.getElementById('produzent').value;
+
+  if(name && !produzenten.includes(name)){
+    produzenten.push(name);
+    produzenten.sort((a,b)=>a.localeCompare(b));
+
     localStorage.setItem("produzenten", JSON.stringify(produzenten));
     renderProduzenten();
   }
