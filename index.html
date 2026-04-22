@@ -31,21 +31,139 @@
   <input type="date" id="datum">
 
   <label>Produzent</label>
-  <select id="produzent">
-    <option value="">Produzent wählen</option>
-    <option>Bomadek</option>
-    <option>Bodama</option>
-    <option>Podolski</option>
-    <option>Bimex</option>
-    <option>Animex K4</option>
-    <option>Dasyzna</option>
-    <option>OSI</option>
-    <option>Indrol</option>
-    <option>Gobarto</option>
-    <option>Wipasz</option>
-    <option>Plukon</option>
-  </select>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Produzent Dropdown</title>
 
+<style>
+  .dropdown {
+    position: relative;
+    width: 250px;
+    font-family: Arial;
+  }
+
+  .dropdown input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+  }
+
+  .dropdown-list {
+    position: absolute;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    background: white;
+    display: none;
+    z-index: 1000;
+  }
+
+  .dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background: #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<label>Produzent</label>
+
+<div class="dropdown">
+  <input type="text" id="input" placeholder="Produzent wählen oder eingeben">
+  <div id="list" class="dropdown-list"></div>
+</div>
+
+<script>
+  let produzenten = [
+    "Bomadek",
+    "Bodama",
+    "Podolski",
+    "Bimex",
+    "Animex K4",
+    "Dasyzna",
+    "OSI",
+    "Indrol",
+    "Gobarto",
+    "Wipasz",
+    "Plukon"
+  ];
+
+  const input = document.getElementById("input");
+  const list = document.getElementById("list");
+
+  function sortiereListe() {
+    produzenten.sort((a, b) => a.localeCompare(b, "de", { sensitivity: "base" }));
+  }
+
+  function renderListe(filter = "") {
+    list.innerHTML = "";
+
+    const gefiltert = produzenten.filter(p =>
+      p.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    gefiltert.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "dropdown-item";
+      div.textContent = p;
+
+      div.onclick = () => {
+        input.value = p;
+        list.style.display = "none";
+      };
+
+      list.appendChild(div);
+    });
+
+    list.style.display = gefiltert.length ? "block" : "none";
+  }
+
+  function addProduzent(value) {
+    const val = value.trim();
+    if (!val) return;
+
+    const exists = produzenten.some(p => p.toLowerCase() === val.toLowerCase());
+
+    if (!exists) {
+      produzenten.push(val);
+      sortiereListe();
+    }
+  }
+
+  input.addEventListener("input", () => {
+    renderListe(input.value);
+  });
+
+  input.addEventListener("focus", () => {
+    renderListe(input.value);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      addProduzent(input.value);
+      renderListe("");
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".dropdown")) {
+      list.style.display = "none";
+    }
+  });
+
+  sortiereListe();
+</script>
+
+</body>
+</html>
   <label>Paletten Nr</label>
   <input id="pallnr">
 
