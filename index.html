@@ -25,75 +25,25 @@
 
 <div class="box">
   <h2>🚛 Spedition Rampe Tool (Web App)</h2>
+  <div class="small">Speichert automatisch im Browser (wie kleine App)</div>
 
   <label>Datum</label>
   <input type="date" id="datum">
 
-<label>Produzent</label>
-
-<input id="produzent" placeholder="Produzent eingeben" oninput="filterProduzenten()">
-
-<select id="produzentenDropdown" size="5" onclick="selectProduzent()" style="width:100%; margin-top:5px;">
-</select>
-
-<select id="produzentenListe"></select>
-
-<script>
-// Standard-Produzenten (werden nur einmal gesetzt)
-let produzenten = JSON.parse(localStorage.getItem("produzenten") || `[
-  "Bomadek",
-  "Bodama",
-  "Biernacki",
-  "Podolski",
-  "Bimex",
-  "Animex K4",
-  "Dasyzna",
-  "OSI",
-  "Indrol",
-  "Gobarto",
-  "Wipasz",
-  "Plukon"
-]`);
-
-function renderProduzentenListe(filter=""){
-  let dropdown = document.getElementById("produzentenDropdown");
-  dropdown.innerHTML = "";
-
-  produzenten
-    .sort((a,b)=>a.localeCompare(b))
-    .filter(p => p.toLowerCase().includes(filter.toLowerCase()))
-    .forEach(p => {
-      dropdown.innerHTML += `<option>${p}</option>`;
-    });
-}
-
-function filterProduzenten(){
-  let value = document.getElementById("produzent").value;
-  renderProduzentenListe(value);
-}
-
-function selectProduzent(){
-  let dropdown = document.getElementById("produzentenDropdown");
-  let selected = dropdown.value;
-
-  document.getElementById("produzent").value = selected;
-}
-
-function addProduzentIfNew(name){
-  if(name && !produzenten.includes(name)){
-    produzenten.push(name);
-    localStorage.setItem("produzenten", JSON.stringify(produzenten));
-  }
-}
-
-// initial laden
-renderProduzentenListe();
-  }
-}
-
-// initial laden
-renderProduzenten();
-</script>
+  <label>Produzent</label>
+  <select id="produzent">
+    <option value="">Produzent wählen</option>
+    <option>Bomadek</option>
+    <option>Bodama</option>
+    <option>Podolski</option>
+    <option>Bimex</option>
+    <option>Animex K4</option>
+    <option>Dasyzna</option>
+    <option>OSI</option>
+    <option>Indrol</option>
+    <option>Gobarto</option>
+    <option>Wipasz</option>
+    <option>Plukon</option>
   </select>
 
   <label>Paletten Nr</label>
