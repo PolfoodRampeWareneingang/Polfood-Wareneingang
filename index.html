@@ -34,7 +34,8 @@
  <label>Produzent</label>
 <input list="produzentenListe" id="produzent" 
        placeholder="Produzent wählen oder eingeben"
-       onchange="handleProduzentChange()">
+       onchange="handleProduzentChange()"
+       onclick="this.showPicker && this.showPicker()">
 
 <datalist id="produzentenListe"></datalist>
 
