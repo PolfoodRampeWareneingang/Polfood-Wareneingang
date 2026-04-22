@@ -30,20 +30,52 @@
   <label>Datum</label>
   <input type="date" id="datum">
 
-  <label>Produzent</label>
-  <select id="produzent">
-    <option value="">Produzent wählen</option>
-    <option>Bomadek</option>
-    <option>Bodama</option>
-    <option>Podolski</option>
-    <option>Bimex</option>
-    <option>Animex K4</option>
-    <option>Dasyzna</option>
-    <option>OSI</option>
-    <option>Indrol</option>
-    <option>Gobarto</option>
-    <option>Wipasz</option>
-    <option>Plukon</option>
+ <label>Produzent</label>
+ <label>Produzent</label>
+<input list="produzentenListe" id="produzent" placeholder="Produzent wählen oder eingeben">
+
+<datalist id="produzentenListe"></datalist>
+
+<script>
+// Standard-Produzenten (werden nur einmal gesetzt)
+let produzenten = JSON.parse(localStorage.getItem("produzenten") || `[
+  "Bomadek",
+  "Bodama",
+  "Podolski",
+  "Bimex",
+  "Animex K4",
+  "Dasyzna",
+  "OSI",
+  "Indrol",
+  "Gobarto",
+  "Wipasz",
+  "Plukon"
+]`);
+
+// Dropdown rendern (alphabetisch)
+function renderProduzenten(){
+  produzenten.sort((a,b)=>a.localeCompare(b));
+
+  let list = document.getElementById("produzentenListe");
+  list.innerHTML = "";
+
+  produzenten.forEach(p => {
+    list.innerHTML += `<option value="${p}">`;
+  });
+}
+
+// neuen Produzenten automatisch speichern
+function addProduzentIfNew(name){
+  if(name && !produzenten.includes(name)){
+    produzenten.push(name);
+    localStorage.setItem("produzenten", JSON.stringify(produzenten));
+    renderProduzenten();
+  }
+}
+
+// initial laden
+renderProduzenten();
+</script>
   </select>
 
   <label>Paletten Nr</label>
