@@ -25,19 +25,18 @@
 
 <div class="box">
   <h2>🚛 Spedition Rampe Tool (Web App)</h2>
-  <div class="small">Speichert automatisch im Browser (wie kleine App)</div>
 
   <label>Datum</label>
   <input type="date" id="datum">
 
- <label>Produzent</label>
- <label>Produzent</label>
-<input list="produzentenListe" id="produzent" 
-       placeholder="Produzent wählen oder eingeben"
-       onchange="handleProduzentChange()"
-       onclick="this.showPicker && this.showPicker()">
+<label>Produzent</label>
 
-<select id="produzentenListe"></datalist>
+<input id="produzent" placeholder="Produzent eingeben" oninput="filterProduzenten()">
+
+<select id="produzentenDropdown" size="5" onclick="selectProduzent()" style="width:100%; margin-top:5px;">
+</select>
+
+<select id="produzentenListe"></select>
 
 <script>
 // Standard-Produzenten (werden nur einmal gesetzt)
@@ -56,33 +55,39 @@ let produzenten = JSON.parse(localStorage.getItem("produzenten") || `[
   "Plukon"
 ]`);
 
-// Dropdown rendern (alphabetisch)
-function renderProduzenten(){
-  produzenten.sort((a,b)=>a.localeCompare(b));
+function renderProduzentenListe(filter=""){
+  let dropdown = document.getElementById("produzentenDropdown");
+  dropdown.innerHTML = "";
 
-  let list = document.getElementById("produzentenListe");
-  list.innerHTML = "";
-
-  produzenten.forEach(p => {
-    list.innerHTML += `<option value="${p}">`;
-  });
+  produzenten
+    .sort((a,b)=>a.localeCompare(b))
+    .filter(p => p.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(p => {
+      dropdown.innerHTML += `<option>${p}</option>`;
+    });
 }
 
-// neuen Produzenten automatisch speichern
+function filterProduzenten(){
+  let value = document.getElementById("produzent").value;
+  renderProduzentenListe(value);
+}
+
+function selectProduzent(){
+  let dropdown = document.getElementById("produzentenDropdown");
+  let selected = dropdown.value;
+
+  document.getElementById("produzent").value = selected;
+}
+
 function addProduzentIfNew(name){
   if(name && !produzenten.includes(name)){
     produzenten.push(name);
     localStorage.setItem("produzenten", JSON.stringify(produzenten));
-    renderProduzenten();
-  function handleProduzentChange(){
-  let name = document.getElementById('produzent').value;
+  }
+}
 
-  if(name && !produzenten.includes(name)){
-    produzenten.push(name);
-    produzenten.sort((a,b)=>a.localeCompare(b));
-
-    localStorage.setItem("produzenten", JSON.stringify(produzenten));
-    renderProduzenten();
+// initial laden
+renderProduzentenListe();
   }
 }
 
