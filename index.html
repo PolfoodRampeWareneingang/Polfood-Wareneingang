@@ -1,385 +1,274 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wareneingang Polfood GmbH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wareneingang Polfood GmbH</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 15px;
-    }
+<style>
+body { font-family: Arial; background:#f4f4f4; padding:15px; }
+.box { background:white; padding:15px; max-width:900px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+h2 { text-align:center; }
 
-    .box {
-      background: white;
-      padding: 15px;
-      max-width: 900px;
-      margin: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+label { font-weight:bold; display:block; margin-top:10px; }
+input { width:100%; padding:10px; margin:6px 0; font-size:16px; box-sizing:border-box; }
 
-    h2 {
-      text-align: center;
-    }
+button { width:100%; padding:12px; margin-top:10px; background:black; color:white; border:none; border-radius:6px; }
 
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
+table { width:100%; margin-top:20px; border-collapse:collapse; font-size:12px; }
+th, td { border:1px solid #ddd; padding:6px; text-align:center; }
+th { background:#eee; }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
+.dropdown { position:relative; }
+.dropdown-list {
+  position:absolute; width:100%; background:white;
+  border:1px solid #ccc; max-height:180px; overflow:auto;
+  display:none; z-index:1000;
+}
+.dropdown-item { padding:10px; cursor:pointer; }
+.dropdown-item:hover { background:#eee; }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: black;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
+.action-btn {
+  background:#c62828; color:white; border:none;
+  padding:6px 10px; border-radius:4px;
+}
 
-    button:hover {
-      opacity: 0.9;
-    }
-
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px;
-      text-align: center;
-    }
-
-    th {
-      background: #eee;
-    }
-
-    .dropdown {
-      position: relative;
-      width: 100%;
-    }
-
-    .dropdown input {
-      width: 100%;
-    }
-
-    .dropdown-list {
-      position: absolute;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-top: none;
-      max-height: 180px;
-      overflow-y: auto;
-      background: white;
-      display: none;
-      z-index: 1000;
-      box-sizing: border-box;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .dropdown-item {
-      padding: 14px;
-      font-size: 16px;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .dropdown-item:hover {
-      background: #f0f0f0;
-    }
-
-    .action-btn {
-      background: #c62828;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      width: auto;
-      margin: 0;
-    }
-  </style>
+.photo-preview img {
+  max-width:100%;
+  max-height:150px;
+  border-radius:8px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="box">
-  <h2>🚛 Wareneingang Polfood GmbH</h2>
+<h2>🚛 Wareneingang Polfood GmbH</h2>
 
-  <label for="datum">Datum</label>
-  <input type="date" id="datum">
+<label>Datum</label>
+<input type="date" id="datum">
 
-  <label for="produzent">Produzent</label>
-  <div class="dropdown">
-    <input type="text" id="produzent" placeholder="Produzent wählen oder eingeben" autocomplete="off">
-    <div id="produzentList" class="dropdown-list"></div>
-  </div>
+<label>Produzent</label>
+<div class="dropdown">
+  <input id="produzent" placeholder="Produzent wählen oder eingeben">
+  <div id="produzentList" class="dropdown-list"></div>
+</div>
 
-  <label for="pallnr">Paletten Nr</label>
-  <input type="text" id="pallnr" inputmode="numeric" pattern="[0-9]*">
+<label>Paletten Nr</label>
+<input id="pallnr">
 
-  <label for="e2_in">E2 IN</label>
-  <input type="text" id="e2_in" inputmode="numeric" pattern="[0-9]*">
+<label>E2 IN</label>
+<input id="e2_in">
 
-  <label for="h1_in">H1 IN</label>
-  <input type="text" id="h1_in" inputmode="numeric" pattern="[0-9]*">
+<label>H1 IN</label>
+<input id="h1_in">
 
-  <label for="einweg">Einweg</label>
-  <input type="text" id="einweg" inputmode="numeric" pattern="[0-9]*">
+<label>Einweg</label>
+<input id="einweg">
 
-  <label for="epal">EPAL</label>
-  <input type="text" id="epal" inputmode="numeric" pattern="[0-9]*">
+<label>EPAL</label>
+<input id="epal">
 
-  <label for="e2_out">E2 OUT</label>
-  <input type="text" id="e2_out" inputmode="numeric" pattern="[0-9]*">
+<label>E2 OUT</label>
+<input id="e2_out">
 
-  <label for="h1_out">H1 OUT</label>
-  <input type="text" id="h1_out" inputmode="numeric" pattern="[0-9]*">
+<label>H1 OUT</label>
+<input id="h1_out">
 
-  <button type="button" onclick="addEntry()">➕ Eintrag speichern</button>
-  <button type="button" onclick="exportExcel()">📦 Excel Tagesbericht exportieren</button>
-  <button type="button" onclick="clearData()">🗑️ Alle Daten löschen</button>
-  <button type="button" onclick="resetProduzenten()">♻️ Produzentenliste zurücksetzen</button>
+<label>Bemerkung</label>
+<input id="bemerkung">
 
-  <table>
-    <thead>
-      <tr>
-        <th>Datum</th>
-        <th>Produzent</th>
-        <th>Pall Nr</th>
-        <th>E2 IN</th>
-        <th>H1 IN</th>
-        <th>Einweg</th>
-        <th>EPAL</th>
-        <th>E2 OUT</th>
-        <th>H1 OUT</th>
-        <th>Aktion</th>
-      </tr>
-    </thead>
-    <tbody id="table"></tbody>
-  </table>
+<label>Foto</label>
+<input type="file" id="foto" accept="image/*" capture="environment">
+
+<div class="photo-preview" id="previewBox" style="display:none;">
+  <img id="preview">
+</div>
+
+<button onclick="addEntry()">➕ Eintrag speichern</button>
+<button onclick="exportExcel()">📦 Excel exportieren</button>
+<button onclick="clearData()">🗑️ Daten löschen</button>
+
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Produzent</th>
+<th>Pall Nr</th>
+<th>E2 IN</th>
+<th>H1 IN</th>
+<th>Einweg</th>
+<th>EPAL</th>
+<th>E2 OUT</th>
+<th>H1 OUT</th>
+<th>Bemerkung</th>
+<th>Foto</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
 </div>
 
 <script>
-  const standardProduzenten = [
-    "Animex K4",
-    "Bimex",
-    "Bodama",
-    "Bomadek",
-    "Dasyzna",
-    "Gobarto",
-    "Indrol",
-    "OSI",
-    "Plukon",
-    "Podolski",
-    "Wipasz"
-  ];
+const standardProduzenten = [
+"Animex K4","Bimex","Bodama","Bomadek","Dasyzna",
+"Gobarto","Indrol","OSI","Plukon","Podolski","Wipasz"
+];
 
-  let data = JSON.parse(localStorage.getItem("spedition_data") || "[]");
-  let produzenten = JSON.parse(localStorage.getItem("produzenten_liste") || "null") || [...standardProduzenten];
+let data = JSON.parse(localStorage.getItem("data") || "[]");
+let produzenten = JSON.parse(localStorage.getItem("prod") || "null") || [...standardProduzenten];
 
-  const produzentInput = document.getElementById("produzent");
-  const produzentList = document.getElementById("produzentList");
-  const datumInput = document.getElementById("datum");
+const input = document.getElementById("produzent");
+const list = document.getElementById("produzentList");
 
-  if (!datumInput.value) {
-    datumInput.value = new Date().toISOString().split("T")[0];
+let currentPhoto = null;
+
+function save(){ localStorage.setItem("data", JSON.stringify(data)); }
+function saveProd(){ localStorage.setItem("prod", JSON.stringify(produzenten)); }
+
+function renderList(filter=""){
+list.innerHTML="";
+produzenten
+.filter(p=>p.toLowerCase().includes(filter.toLowerCase()))
+.forEach(p=>{
+  const div=document.createElement("div");
+  div.textContent=p;
+  div.className="dropdown-item";
+  div.onclick=()=>{input.value=p; list.style.display="none";}
+  list.appendChild(div);
+});
+list.style.display="block";
+}
+
+input.addEventListener("input",()=>renderList(input.value));
+input.addEventListener("focus",()=>renderList(input.value));
+document.addEventListener("click",(e)=>{ if(!e.target.closest(".dropdown")) list.style.display="none"; });
+
+input.addEventListener("keydown",(e)=>{
+if(e.key==="Enter"){
+  const val=input.value.trim();
+  if(val && !produzenten.includes(val)){
+    produzenten.push(val);
+    saveProd();
   }
+}
+});
 
-  function save() {
-    localStorage.setItem("spedition_data", JSON.stringify(data));
-  }
+document.getElementById("foto").addEventListener("change",(e)=>{
+const file=e.target.files[0];
+if(!file) return;
+currentPhoto=file;
 
-  function saveProduzenten() {
-    localStorage.setItem("produzenten_liste", JSON.stringify(produzenten));
-  }
+const reader=new FileReader();
+reader.onload=(ev)=>{
+  document.getElementById("preview").src=ev.target.result;
+  document.getElementById("previewBox").style.display="block";
+};
+reader.readAsDataURL(file);
+});
 
-  function sortiereProduzenten() {
-    produzenten.sort((a, b) => a.localeCompare(b, "de", { sensitivity: "base" }));
-  }
+function buildName(datum,prod,file){
+const clean=prod.replace(/[^a-z0-9]/gi,"_");
+const time=new Date().toISOString().replace(/[:.]/g,"");
+const ext=file.name.split(".").pop();
+return `${datum}_${clean}_${time}.${ext}`;
+}
 
-  function renderProduzenten(filter = "") {
-    produzentList.innerHTML = "";
+function downloadPhoto(file,name){
+const url=URL.createObjectURL(file);
+const a=document.createElement("a");
+a.href=url;
+a.download=name;
+a.click();
+URL.revokeObjectURL(url);
+}
 
-    const gefiltert = produzenten.filter(p =>
-      p.toLowerCase().includes(filter.toLowerCase())
-    );
+function addEntry(){
+const datum=document.getElementById("datum").value;
+const prod=input.value.trim();
 
-    gefiltert.forEach(p => {
-      const div = document.createElement("div");
-      div.className = "dropdown-item";
-      div.textContent = p;
-      div.onclick = () => {
-        produzentInput.value = p;
-        produzentList.style.display = "none";
-      };
-      produzentList.appendChild(div);
-    });
+if(!datum || !prod){ alert("Bitte ausfüllen"); return; }
 
-    produzentList.style.display = gefiltert.length ? "block" : "none";
-  }
+let fotoName="";
+if(currentPhoto){
+  fotoName=buildName(datum,prod,currentPhoto);
+  downloadPhoto(currentPhoto,fotoName);
+}
 
-  function addProduzent(value) {
-    const val = value.trim();
-    if (!val) return;
+data.push({
+datum,
+produzent:prod,
+pallnr:document.getElementById("pallnr").value,
+e2_in:document.getElementById("e2_in").value,
+h1_in:document.getElementById("h1_in").value,
+einweg:document.getElementById("einweg").value,
+epal:document.getElementById("epal").value,
+e2_out:document.getElementById("e2_out").value,
+h1_out:document.getElementById("h1_out").value,
+bemerkung:document.getElementById("bemerkung").value,
+foto:fotoName
+});
 
-    const exists = produzenten.some(p => p.toLowerCase() === val.toLowerCase());
+save();
+render();
 
-    if (!exists) {
-      produzenten.push(val);
-      sortiereProduzenten();
-      saveProduzenten();
-    }
-  }
+document.querySelectorAll("input").forEach(i=>i.value="");
+currentPhoto=null;
+document.getElementById("previewBox").style.display="none";
+}
 
-  function resetProduzenten() {
-    if (confirm("Produzentenliste auf Standard zurücksetzen?")) {
-      produzenten = [...standardProduzenten];
-      sortiereProduzenten();
-      saveProduzenten();
-      renderProduzenten(produzentInput.value);
-      alert("Produzentenliste wurde zurückgesetzt.");
-    }
-  }
+function render(){
+const tbody=document.getElementById("table");
+tbody.innerHTML="";
 
-  produzentInput.addEventListener("input", () => {
-    renderProduzenten(produzentInput.value);
-  });
+data.forEach((r,i)=>{
+tbody.innerHTML+=`
+<tr>
+<td>${r.datum}</td>
+<td>${r.produzent}</td>
+<td>${r.pallnr}</td>
+<td>${r.e2_in}</td>
+<td>${r.h1_in}</td>
+<td>${r.einweg}</td>
+<td>${r.epal}</td>
+<td>${r.e2_out}</td>
+<td>${r.h1_out}</td>
+<td>${r.bemerkung}</td>
+<td>${r.foto||""}</td>
+<td><button class="action-btn" onclick="del(${i})">X</button></td>
+</tr>`;
+});
+}
 
-  produzentInput.addEventListener("focus", () => {
-    renderProduzenten(produzentInput.value);
-  });
+function del(i){
+if(confirm("Löschen?")){
+data.splice(i,1);
+save();
+render();
+}
+}
 
-  produzentInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addProduzent(produzentInput.value);
-      renderProduzenten(produzentInput.value);
-    }
-  });
+function exportExcel(){
+if(data.length===0){alert("Keine Daten");return;}
+const ws=XLSX.utils.json_to_sheet(data);
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Report");
+XLSX.writeFile(wb,"Wareneingang.xlsx");
+}
 
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".dropdown")) {
-      produzentList.style.display = "none";
-    }
-  });
+function clearData(){
+if(confirm("Alles löschen?")){
+data=[];
+save();
+render();
+}
+}
 
-  function addEntry() {
-    const datum = document.getElementById("datum").value;
-    const produzent = document.getElementById("produzent").value.trim();
-
-    if (!datum) {
-      alert("Bitte Datum eingeben.");
-      return;
-    }
-
-    if (!produzent) {
-      alert("Bitte Produzent eingeben.");
-      return;
-    }
-
-    addProduzent(produzent);
-
-    data.push({
-      datum: datum,
-      produzent: produzent,
-      pallnr: Number(document.getElementById("pallnr").value || 0),
-      e2_in: Number(document.getElementById("e2_in").value || 0),
-      h1_in: Number(document.getElementById("h1_in").value || 0),
-      einweg: Number(document.getElementById("einweg").value || 0),
-      epal: Number(document.getElementById("epal").value || 0),
-      e2_out: Number(document.getElementById("e2_out").value || 0),
-      h1_out: Number(document.getElementById("h1_out").value || 0)
-    });
-
-    save();
-    render();
-
-    document.getElementById("pallnr").value = "";
-    document.getElementById("e2_in").value = "";
-    document.getElementById("h1_in").value = "";
-    document.getElementById("einweg").value = "";
-    document.getElementById("epal").value = "";
-    document.getElementById("e2_out").value = "";
-    document.getElementById("h1_out").value = "";
-
-    document.getElementById("pallnr").focus();
-  }
-
-  function deleteEntry(index) {
-    if (confirm("Diesen Eintrag löschen?")) {
-      data.splice(index, 1);
-      save();
-      render();
-    }
-  }
-
-  function render() {
-    const tbody = document.getElementById("table");
-    tbody.innerHTML = "";
-
-    data.forEach((r, index) => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.datum}</td>
-          <td>${r.produzent}</td>
-          <td>${r.pallnr}</td>
-          <td>${r.e2_in}</td>
-          <td>${r.h1_in}</td>
-          <td>${r.einweg}</td>
-          <td>${r.epal}</td>
-          <td>${r.e2_out}</td>
-          <td>${r.h1_out}</td>
-          <td><button type="button" class="action-btn" onclick="deleteEntry(${index})">Löschen</button></td>
-        </tr>
-      `;
-    });
-  }
-
-  function exportExcel() {
-    if (data.length === 0) {
-      alert("Keine Daten!");
-      return;
-    }
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tagesbericht");
-
-    const today = document.getElementById("datum").value || "report";
-    XLSX.writeFile(wb, `Tagesbericht_${today}.xlsx`);
-  }
-
-  function clearData() {
-    if (confirm("Wirklich alle Daten löschen?")) {
-      data = [];
-      save();
-      render();
-    }
-  }
-
-  sortiereProduzenten();
-  saveProduzenten();
-  render();
+render();
 </script>
 
 </body>
