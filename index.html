@@ -8,37 +8,92 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-body { font-family: Arial; background:#f4f4f4; padding:15px; }
+body { font-family: Arial; background:#f4f4f4; padding:15px; margin:0; }
 .box { background:white; padding:15px; max-width:900px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-h2 { text-align:center; }
+h2 { text-align:center; margin-top:0; }
 
 label { font-weight:bold; display:block; margin-top:10px; }
-input { width:100%; padding:10px; margin:6px 0; font-size:16px; box-sizing:border-box; }
 
-button { width:100%; padding:12px; margin-top:10px; background:black; color:white; border:none; border-radius:6px; }
+input {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  font-size:16px;
+  box-sizing:border-box;
+}
 
-table { width:100%; margin-top:20px; border-collapse:collapse; font-size:12px; }
-th, td { border:1px solid #ddd; padding:6px; text-align:center; }
+button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  background:black;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th, td {
+  border:1px solid #ddd;
+  padding:6px;
+  text-align:center;
+}
+
 th { background:#eee; }
 
 .dropdown { position:relative; }
+
 .dropdown-list {
-  position:absolute; width:100%; background:white;
-  border:1px solid #ccc; max-height:180px; overflow:auto;
-  display:none; z-index:1000;
+  position:absolute;
+  width:100%;
+  background:white;
+  border:1px solid #ccc;
+  max-height:200px;
+  overflow:auto;
+  display:none;
+  z-index:1000;
 }
-.dropdown-item { padding:10px; cursor:pointer; }
+
+.dropdown-item {
+  padding:12px;
+  cursor:pointer;
+}
+
 .dropdown-item:hover { background:#eee; }
 
 .action-btn {
-  background:#c62828; color:white; border:none;
-  padding:6px 10px; border-radius:4px;
+  background:#c62828;
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:4px;
+  width:auto;
 }
 
 .photo-preview img {
   max-width:100%;
-  max-height:150px;
+  max-height:160px;
   border-radius:8px;
+}
+
+.summary-box {
+  margin-top:20px;
+  background:#fafafa;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:10px;
+}
+
+.summary-grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
 }
 </style>
 </head>
@@ -58,25 +113,19 @@ th { background:#eee; }
 </div>
 
 <label>Paletten Nr</label>
-<input id="pallnr">
+<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" step="1" id="pallnr">
 
 <label>E2 IN</label>
-<input id="e2_in">
+<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" step="1" id="e2_in">
 
 <label>H1 IN</label>
-<input id="h1_in">
+<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" step="1" id="h1_in">
 
 <label>Einweg</label>
-<input id="einweg">
+<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" step="1" id="einweg">
 
 <label>EPAL</label>
-<input id="epal">
-
-<label>E2 OUT</label>
-<input id="e2_out">
-
-<label>H1 OUT</label>
-<input id="h1_out">
+<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" step="1" id="epal">
 
 <label>Bemerkung</label>
 <input id="bemerkung">
@@ -92,6 +141,15 @@ th { background:#eee; }
 <button onclick="exportExcel()">📦 Excel exportieren</button>
 <button onclick="clearData()">🗑️ Daten löschen</button>
 
+<div class="summary-box">
+<div class="summary-grid">
+<div>E2 IN: <strong id="sum_e2_in">0</strong></div>
+<div>H1 IN: <strong id="sum_h1_in">0</strong></div>
+<div>Einweg: <strong id="sum_einweg">0</strong></div>
+<div>EPAL: <strong id="sum_epal">0</strong></div>
+</div>
+</div>
+
 <table>
 <thead>
 <tr>
@@ -102,8 +160,6 @@ th { background:#eee; }
 <th>H1 IN</th>
 <th>Einweg</th>
 <th>EPAL</th>
-<th>E2 OUT</th>
-<th>H1 OUT</th>
 <th>Bemerkung</th>
 <th>Foto</th>
 <th>Aktion</th>
@@ -119,114 +175,173 @@ const standardProduzenten = [
 "Gobarto","Indrol","OSI","Plukon","Podolski","Wipasz"
 ];
 
-let data = JSON.parse(localStorage.getItem("data") || "[]");
-let produzenten = JSON.parse(localStorage.getItem("prod") || "null") || [...standardProduzenten];
+let data = JSON.parse(localStorage.getItem("wareneingang_data") || "[]");
+let produzenten = JSON.parse(localStorage.getItem("produzenten_liste") || "null") || [...standardProduzenten];
+let currentPhoto = null;
 
 const input = document.getElementById("produzent");
 const list = document.getElementById("produzentList");
+const datumInput = document.getElementById("datum");
 
-let currentPhoto = null;
+function setHeute(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  datumInput.value = `${yyyy}-${mm}-${dd}`;
+}
+setHeute();
 
-function save(){ localStorage.setItem("data", JSON.stringify(data)); }
-function saveProd(){ localStorage.setItem("prod", JSON.stringify(produzenten)); }
+function save(){
+  localStorage.setItem("wareneingang_data", JSON.stringify(data));
+}
+
+function saveProd(){
+  localStorage.setItem("produzenten_liste", JSON.stringify(produzenten));
+}
 
 function renderList(filter=""){
-list.innerHTML="";
-produzenten
-.filter(p=>p.toLowerCase().includes(filter.toLowerCase()))
-.forEach(p=>{
-  const div=document.createElement("div");
-  div.textContent=p;
-  div.className="dropdown-item";
-  div.onclick=()=>{input.value=p; list.style.display="none";}
-  list.appendChild(div);
-});
-list.style.display="block";
+  list.innerHTML="";
+  produzenten
+    .filter(p=>p.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(p=>{
+      const div=document.createElement("div");
+      div.textContent=p;
+      div.className="dropdown-item";
+      div.onclick=()=>{
+        input.value=p;
+        list.style.display="none";
+      };
+      list.appendChild(div);
+    });
+  list.style.display="block";
+}
+
+function addProduzent(val){
+  const p = val.trim();
+  if(p && !produzenten.some(x=>x.toLowerCase()===p.toLowerCase())){
+    produzenten.push(p);
+    saveProd();
+  }
 }
 
 input.addEventListener("input",()=>renderList(input.value));
 input.addEventListener("focus",()=>renderList(input.value));
-document.addEventListener("click",(e)=>{ if(!e.target.closest(".dropdown")) list.style.display="none"; });
 
-input.addEventListener("keydown",(e)=>{
-if(e.key==="Enter"){
-  const val=input.value.trim();
-  if(val && !produzenten.includes(val)){
-    produzenten.push(val);
-    saveProd();
-  }
-}
+document.addEventListener("click",(e)=>{
+  if(!e.target.closest(".dropdown")) list.style.display="none";
 });
 
 document.getElementById("foto").addEventListener("change",(e)=>{
-const file=e.target.files[0];
-if(!file) return;
-currentPhoto=file;
+  const file=e.target.files[0];
+  if(!file) return;
 
-const reader=new FileReader();
-reader.onload=(ev)=>{
-  document.getElementById("preview").src=ev.target.result;
-  document.getElementById("previewBox").style.display="block";
-};
-reader.readAsDataURL(file);
+  currentPhoto=file;
+
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    document.getElementById("preview").src=ev.target.result;
+    document.getElementById("previewBox").style.display="block";
+  };
+  reader.readAsDataURL(file);
 });
 
 function buildName(datum,prod,file){
-const clean=prod.replace(/[^a-z0-9]/gi,"_");
-const time=new Date().toISOString().replace(/[:.]/g,"");
-const ext=file.name.split(".").pop();
-return `${datum}_${clean}_${time}.${ext}`;
+  const clean=prod.replace(/[^a-z0-9]/gi,"_");
+  const time=new Date().toISOString().replace(/[:.]/g,"");
+  const ext=file.name.split(".").pop();
+  return `${datum}_${clean}_${time}.${ext}`;
 }
 
 function downloadPhoto(file,name){
-const url=URL.createObjectURL(file);
-const a=document.createElement("a");
-a.href=url;
-a.download=name;
-a.click();
-URL.revokeObjectURL(url);
+  const url=URL.createObjectURL(file);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-function addEntry(){
-const datum=document.getElementById("datum").value;
-const prod=input.value.trim();
+const felder = [
+  "datum",
+  "produzent",
+  "pallnr",
+  "e2_in",
+  "h1_in",
+  "einweg",
+  "epal",
+  "bemerkung"
+];
 
-if(!datum || !prod){ alert("Bitte ausfüllen"); return; }
+felder.forEach((id,i)=>{
+  const feld=document.getElementById(id);
+  feld.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
 
-let fotoName="";
-if(currentPhoto){
-  fotoName=buildName(datum,prod,currentPhoto);
-  downloadPhoto(currentPhoto,fotoName);
-}
+      if(id==="produzent"){
+        addProduzent(input.value);
+      }
 
-data.push({
-datum,
-produzent:prod,
-pallnr:document.getElementById("pallnr").value,
-e2_in:document.getElementById("e2_in").value,
-h1_in:document.getElementById("h1_in").value,
-einweg:document.getElementById("einweg").value,
-epal:document.getElementById("epal").value,
-e2_out:document.getElementById("e2_out").value,
-h1_out:document.getElementById("h1_out").value,
-bemerkung:document.getElementById("bemerkung").value,
-foto:fotoName
+      if(felder[i+1]){
+        document.getElementById(felder[i+1]).focus();
+      } else {
+        document.getElementById("foto").focus();
+      }
+    }
+  });
 });
 
-save();
-render();
+function addEntry(){
+  const datum = datumInput.value;
+  const prod = input.value.trim();
 
-document.querySelectorAll("input").forEach(i=>i.value="");
-currentPhoto=null;
-document.getElementById("previewBox").style.display="none";
+  if(!datum || !prod){
+    alert("Bitte Datum und Produzent ausfüllen.");
+    return;
+  }
+
+  addProduzent(prod);
+
+  let fotoName="";
+  if(currentPhoto){
+    fotoName=buildName(datum,prod,currentPhoto);
+    downloadPhoto(currentPhoto,fotoName);
+  }
+
+  data.push({
+    datum,
+    produzent: prod,
+    pallnr: Number(document.getElementById("pallnr").value || 0),
+    e2_in: Number(document.getElementById("e2_in").value || 0),
+    h1_in: Number(document.getElementById("h1_in").value || 0),
+    einweg: Number(document.getElementById("einweg").value || 0),
+    epal: Number(document.getElementById("epal").value || 0),
+    bemerkung: document.getElementById("bemerkung").value,
+    foto: fotoName
+  });
+
+  save();
+  render();
+  summen();
+
+  document.querySelectorAll("input").forEach(i=>{
+    if(i.type!=="date") i.value="";
+  });
+
+  currentPhoto=null;
+  document.getElementById("previewBox").style.display="none";
+
+  setHeute();
+  input.focus();
 }
 
 function render(){
-const tbody=document.getElementById("table");
-tbody.innerHTML="";
+  const tbody=document.getElementById("table");
+  tbody.innerHTML="";
 
-data.forEach((r,i)=>{
-tbody.innerHTML+=`
+  data.forEach((r,i)=>{
+    tbody.innerHTML+=`
 <tr>
 <td>${r.datum}</td>
 <td>${r.produzent}</td>
@@ -235,40 +350,54 @@ tbody.innerHTML+=`
 <td>${r.h1_in}</td>
 <td>${r.einweg}</td>
 <td>${r.epal}</td>
-<td>${r.e2_out}</td>
-<td>${r.h1_out}</td>
-<td>${r.bemerkung}</td>
-<td>${r.foto||""}</td>
+<td>${r.bemerkung || ""}</td>
+<td>${r.foto || ""}</td>
 <td><button class="action-btn" onclick="del(${i})">X</button></td>
 </tr>`;
-});
+  });
 }
 
 function del(i){
-if(confirm("Löschen?")){
-data.splice(i,1);
-save();
-render();
+  if(confirm("Diesen Eintrag löschen?")){
+    data.splice(i,1);
+    save();
+    render();
+    summen();
+  }
 }
+
+function summen(){
+  document.getElementById("sum_e2_in").textContent = data.reduce((a,b)=>a+Number(b.e2_in||0),0);
+  document.getElementById("sum_h1_in").textContent = data.reduce((a,b)=>a+Number(b.h1_in||0),0);
+  document.getElementById("sum_einweg").textContent = data.reduce((a,b)=>a+Number(b.einweg||0),0);
+  document.getElementById("sum_epal").textContent = data.reduce((a,b)=>a+Number(b.epal||0),0);
 }
 
 function exportExcel(){
-if(data.length===0){alert("Keine Daten");return;}
-const ws=XLSX.utils.json_to_sheet(data);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Report");
-XLSX.writeFile(wb,"Wareneingang.xlsx");
+  if(data.length===0){
+    alert("Keine Daten.");
+    return;
+  }
+
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Wareneingang");
+
+  const today = datumInput.value || "report";
+  XLSX.writeFile(wb,`Wareneingang_${today}.xlsx`);
 }
 
 function clearData(){
-if(confirm("Alles löschen?")){
-data=[];
-save();
-render();
-}
+  if(confirm("Wirklich alle Daten löschen?")){
+    data=[];
+    save();
+    render();
+    summen();
+  }
 }
 
 render();
+summen();
 </script>
 
 </body>
